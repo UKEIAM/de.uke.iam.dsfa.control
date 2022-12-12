@@ -272,6 +272,22 @@
       <groupId>de.samply</groupId>
       <artifactId>common-config</artifactId>
     </dependency>
+    <!-- Tomcat JDBC -->
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
+    </dependency>
+    <!-- poi for reading and writing on excel data -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>5.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.0.0</version>
+    </dependency>
 
   </dependencies>
 

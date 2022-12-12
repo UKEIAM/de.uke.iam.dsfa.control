@@ -12,8 +12,8 @@ The package to install is called:
 Install the package with either ```apt install postgresql-contrib``` or ```yum install postgresql10-contrib```
 
 #### 2. Configuration file
-Provide a ```dsfa.control.config.xml``` configuration file with the necessary details.
-Put the file in one of the directories explained below.
+Provide a ```dsfa.control.config.xml``` configuration file with the necessary details as shown in  ```/resources/dsfa.control.config.xml.example```.
+Put the file either in resources or in one of the directories explained below.
 
 ##### On Linux and Mac:
 Store the file in the directory ```/etc/dsfa/``` or in ```/usr/local/share/dsfa/```
@@ -36,7 +36,7 @@ Now you can deploy the controller in your tomcat-webapp directory.
 Enable a maven profile overwriting the database-connection values
 ```
   <properties>
-    <dsfa.database.url>jdbc:postgresql://servername:5432/databasename</dsfa.database.url>
+    <dsfa.database.url>jdbc:postgresql://servername:serverhost/databasename</dsfa.database.url>
 	<dsfa.database.schema>public</dsfa.database.schema>
 	<dsfa.database.user>username</dsfa.database.user>
 	<dsfa.database.password>password</dsfa.database.password>

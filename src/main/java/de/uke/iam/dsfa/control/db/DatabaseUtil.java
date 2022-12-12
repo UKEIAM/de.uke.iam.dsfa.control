@@ -10,7 +10,7 @@ import static de.uke.iam.dsfa.control.db.jooq.Tables.USE_CASE;
 import static de.uke.iam.dsfa.control.db.jooq.Tables.USE_CASE_DAMAGING_EVENT;
 import static de.uke.iam.dsfa.control.db.jooq.Tables.USE_CASE_RISK_SOURCE;
 
-import de.uke.iam.dsfa.control.db.jooq.tables.Tom;
+import de.uke.iam.dsfa.control.db.jooq.tables.pojos.Tom;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.DamagingEvent;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.RiskSource;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.RiskSourceCategory;

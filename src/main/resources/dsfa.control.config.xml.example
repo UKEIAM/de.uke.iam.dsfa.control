@@ -1,0 +1,8 @@
+<dsfa>
+  <databaseConnection>
+    <host>servername:serverhost</host>
+    <database>databasename</database>
+    <username>username</username>
+    <password>password</password>
+  </databaseConnection>
+</dsfa>

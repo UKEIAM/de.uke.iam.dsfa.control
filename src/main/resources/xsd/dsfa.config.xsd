@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" jxb:version="2.0">
+  <xs:annotation>
+    <xs:appinfo>
+      <jxb:schemaBindings>
+        <jxb:package name="de.uke.iam.dsfa.control.config"/>
+      </jxb:schemaBindings>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="dsfa" type="dsfa"/>
+  <xs:complexType name="dsfa">
+    <xs:sequence>
+      <xs:element type="databaseConnection" name="databaseConnection"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="databaseConnection">
+    <xs:sequence>
+      <xs:element type="xs:string" name="host"/>
+      <xs:element type="xs:string" name="database"/>
+      <xs:element type="xs:string" name="username"/>
+      <xs:element type="xs:string" name="password"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
