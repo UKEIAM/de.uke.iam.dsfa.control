@@ -31,6 +31,135 @@
       </resource>
     </resources>
 
+    <!-- Plugin to build Flyway -->
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.jaxb2.maven2</groupId>
+        <artifactId>maven-jaxb2-plugin</artifactId>
+        <version>0.12.3</version>
+        <executions>
+          <execution>
+            <id>xjc</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateDirectory>src/main/java/</generateDirectory>
+          <schemaDirectory>src/main/resources/xsd</schemaDirectory>
+          <catalog>catalog.xml</catalog>
+          <episode>true</episode>
+          <locale>en</locale>
+          <args>
+            <arg>-no-header</arg>
+          </args>
+          <strict>false</strict>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>6.2.3</version>
+
+        <!-- The plugin should hook into the migrate goal. Uncomment to generate on every install-->
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>migrate</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <configuration>
+          <url>${dsfa.database.url}</url>
+          <user>${dsfa.database.user}</user>
+          <password>${dsfa.database.password}</password>
+          <schemas>
+            <schema>${dsfa.database.schema}</schema>
+          </schemas>
+        </configuration>
+      </plugin>
+      <!-- Plugin to build Jooq -->
+      <plugin>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-codegen-maven</artifactId>
+        <version>3.12.4</version>
+
+        <!-- The plugin should hook into the generate goal. Uncomment to generate on every install-->
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <!-- Manage the plugin's dependency. In this example, we'll use a PostgreSQL database -->
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${version.postgres}</version>
+          </dependency>
+        </dependencies>
+
+        <!-- Specify the plugin configuration.
+             The configuration format is the same as for the standalone code generator -->
+        <configuration>
+
+          <!-- JDBC connection parameters -->
+          <jdbc>
+            <driver>org.postgresql.Driver</driver>
+            <url>${dsfa.database.url}</url>
+            <user>${dsfa.database.user}</user>
+            <password>${dsfa.database.password}</password>
+          </jdbc>
+
+          <!-- Generator parameters -->
+          <generator>
+            <database>
+              <name>org.jooq.meta.postgres.PostgresDatabase</name>
+              <includes>.*</includes>
+              <excludes>flyway_schema_history</excludes>
+              <!-- In case your database supports catalogs, e.g. SQL Server:
+              <inputCatalog>public</inputCatalog>
+                -->
+              <inputSchema>${dsfa.database.schema}</inputSchema>
+
+              <forcedTypes>
+                <forcedType>
+                  <userType>de.uke.iam.datenhotel.library.model.Status</userType>
+                  <enumConverter>true</enumConverter>
+                  <includeExpression>status</includeExpression>
+                </forcedType>
+                <forcedType>
+                  <userType>de.uke.iam.datenhotel.library.model.Service</userType>
+                  <enumConverter>true</enumConverter>
+                  <includeExpression>service</includeExpression>
+                </forcedType>
+              </forcedTypes>
+
+            </database>
+            <generate>
+              <deprecated>false</deprecated>
+              <indentation>  </indentation>
+              <newline>\r\n</newline>
+              <pojos>true</pojos>
+              <pojosEqualsAndHashCode>true</pojosEqualsAndHashCode>
+              <daos>true</daos>
+            </generate>
+            <target>
+              <packageName>de.uke.iam.dsfa.control.db.jooq</packageName>
+              <directory>./src/main/java</directory>
+            </target>
+          </generator>
+        </configuration>
+      </plugin>
+    </plugins>
+
   </build>
 
   <dependencies>
@@ -110,6 +239,38 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-web</artifactId>
       <scope>runtime</scope>
+    </dependency>
+
+    <!-- Flyway -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <!-- Jooq -->
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-meta</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-codegen</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>de.samply</groupId>
+      <artifactId>common-config</artifactId>
     </dependency>
 
   </dependencies>
