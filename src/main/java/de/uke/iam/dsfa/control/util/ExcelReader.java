@@ -6,19 +6,12 @@ import de.uke.iam.dsfa.control.db.jooq.tables.pojos.DamagingEvent;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.RiskSource;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.Tom;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.UseCase;
+import de.uke.iam.dsfa.control.model.ExcelReaderResponse;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +24,18 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelReader {
-    private static Logger logger = LoggerFactory.getLogger(ExcelReader.class);
-
     static DSLContext dsl = DatabaseConfiguration.get().getDsl();
+
+    static ExcelReaderResponse response = new ExcelReaderResponse();
     static List<String> errorLines = new ArrayList<String>();
+
+    public static List<String> getErrorLines() {
+        return errorLines;
+    }
+
+    public static ExcelReaderResponse getResponse() {
+        return response;
+    }
 
     //check if the name of the sheet corresponds
     // to a name of a risSource sheet: like (RQ NameOfCategory)
@@ -395,29 +396,31 @@ public class ExcelReader {
                 try {
                     DatabaseUtil.insertDamagingEvent(dsl, damagingEvent);
                 } catch (DataAccessException e) {
-                    errorLines.add("DamagingEvent in line " + (rowNr + 1) + " can not be saved to the Db");
+                    errorLines.add("DamagingEvent " + damagingEventId + " in line " + (rowNr + 1)
+                            + " can not be saved to the Db, Check duplicates");
                 }
 
                 try {
                     ProcessUsecaseCells(columnIndexes, row, usecaseNameId);
                 } catch (DataAccessException e) {
-                    errorLines.add(
-                            "Usecase in line " + (rowNr + 1) + " can not be mapped to the DamagingEvent");
+                    errorLines.add("Usecase in line " + (rowNr + 1) + " can not be mapped to the damaging event " +
+                            "or risk source");
                     continue;
                 }
 
                 try {
                     ProcessTomCells(columnIndexes, row);
                 } catch (DataAccessException e) {
-                    errorLines.add("Tom in line " + (rowNr + 1) + " can not be mapped to the DamagingEvent");
+                    errorLines.add("Tom in line " + (rowNr + 1) + " can not be mapped to the damaging event "
+                            + damagingEventId);
                     continue;
                 }
 
                 try {
                     DatabaseUtil.insertDamagingEventRiskSource(dsl, riskSourceId, damagingEventId);
                 } catch (DataAccessException e) {
-                    errorLines.add(
-                            "RiskSource in line " + (rowNr + 1) + " can not be mapped to DamagingEvent");
+                    errorLines.add("RiskSource in line " + (rowNr + 1) + " can not be mapped to DamagingEvent "
+                            + damagingEventId);
                 }
 
 
@@ -425,7 +428,11 @@ public class ExcelReader {
         }
     }
 
-    public static void readFile(File excelFile, String logFilePath) {
+    public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
+        return new FileInputStream(file);
+    }
+
+    public static void readFile(InputStream file) {
         DSLContext dsl = DatabaseConfiguration.get().getDsl();
         /*  delete all entries of all tables to write a new entries */
         DatabaseUtil.truncateAllTables(dsl);
@@ -437,7 +444,6 @@ public class ExcelReader {
         HashMap<String, String> damageSeverityWithTom = null;
 
         try {
-            FileInputStream file = new FileInputStream(excelFile);
             //Create Workbook instance holding reference to .xlsx file
             XSSFWorkbook workbook = new XSSFWorkbook(file);
 
@@ -479,26 +485,22 @@ public class ExcelReader {
                     damageSeverityWithTom);
 
             file.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            logger.error("File not found : Please check the path of your file");
         } catch (IOException e) {
-            logger.error("File could not be read");
+            errorLines.add("Error by reading file");
+            response.setStatus("ERROR");
+            response.setComments(errorLines);
         }
         // if errors are found, then save them to log file
         if (!errorLines.isEmpty()) {
-            Path out = Paths.get(logFilePath + "log.txt");
-            try {
-                Files.write(out, errorLines, Charset.defaultCharset());
-                logger.error("Log File was created with occuring Erros");
-            } catch (IOException e) {
-                logger.error("Log File could not be created");
-                e.printStackTrace();
-            }
+            response.setStatus("ERROR");
+            response.setComments(errorLines);
+            // if any errors are occurs then delete all values in the tables
+            DatabaseUtil.truncateAllTables(dsl);
             // no errors found
         } else {
-            logger.debug("Excel File imported without any problems");
+            response.setStatus("DONE");
+            errorLines.add("No Problems are detected by importing");
+            response.setComments(errorLines);
         }
-
     }
 }
