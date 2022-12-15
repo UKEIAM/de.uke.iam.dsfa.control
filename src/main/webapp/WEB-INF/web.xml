@@ -24,7 +24,7 @@
     <!-- Register my custom provider (not needed if it's in my.package) AND LoggingFilter. -->
     <init-param>
       <param-name>jersey.config.server.provider.classnames</param-name>
-      <param-value>org.glassfish.jersey.filter.LoggingFilter</param-value>
+      <param-value>org.glassfish.jersey.filter.LoggingFilter, org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
     </init-param>
 
     <init-param>
