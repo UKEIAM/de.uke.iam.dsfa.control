@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UtilTest  {
     private Logger logger = LoggerFactory.getLogger(UtilTest.class);
@@ -45,7 +47,13 @@ public class UtilTest  {
 
     @Test
     public void WordWriterTest() throws IOException {
-        XWPFDocument document = WordWriter.getWord(3);
+
+        List<Integer> useCaseIDs = new ArrayList<>();
+
+        useCaseIDs.add(3);
+        useCaseIDs.add(4);
+
+        XWPFDocument document = WordWriter.getWord(useCaseIDs);
         WordWriter.saveFile(document, "WordExample.docx", ".");
     }
 

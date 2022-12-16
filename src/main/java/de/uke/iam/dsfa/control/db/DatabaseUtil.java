@@ -24,11 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Record1;
-import org.jooq.Record2;
-import org.jooq.Result;
+
+import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
 public class DatabaseUtil {
@@ -202,7 +199,7 @@ public class DatabaseUtil {
     return listOfRiskSourcesByUseCase;
   }*/
 
-  public static Result<Record> selectDamaingEventsByUseCaseIDs(DSLContext dsl, int useCaseID, String like) {
+  public static Result<Record> selectDamaingEventsByUseCaseID(DSLContext dsl, int useCaseID, String like) {
     Result<Record> listOfUseCaseRiskSource = dsl.select()
         .from(USE_CASE_DAMAGING_EVENT)
         .join(DAMAGING_EVENT_RISK_SOURCE).on(DAMAGING_EVENT_RISK_SOURCE.DAMAGING_EVENT_ID.eq(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID))
@@ -211,6 +208,19 @@ public class DatabaseUtil {
         .where(USE_CASE_DAMAGING_EVENT.USE_CASE_ID.eq(useCaseID).and(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID.like(like)))
         .orderBy(RISK_SOURCE_CATEGORY.ID.asc(),RISK_SOURCE.ID.asc(), DAMAGING_EVENT_RISK_SOURCE.DAMAGING_EVENT_ID.asc())
         .fetch();
+
+    return listOfUseCaseRiskSource;
+  }
+
+  public static Result<Record4<String, Integer, String, String>> selectDamaingEventsByUseCaseIDs(DSLContext dsl, List<Integer> useCaseID, String like) {
+    Result<Record4<String, Integer, String, String>> listOfUseCaseRiskSource = dsl.selectDistinct(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID,RISK_SOURCE_CATEGORY.ID, RISK_SOURCE.ID, DAMAGING_EVENT_RISK_SOURCE.DAMAGING_EVENT_ID)
+            .from(USE_CASE_DAMAGING_EVENT)
+            .join(DAMAGING_EVENT_RISK_SOURCE).on(DAMAGING_EVENT_RISK_SOURCE.DAMAGING_EVENT_ID.eq(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID))
+            .join(RISK_SOURCE).on(RISK_SOURCE.ID.eq(DAMAGING_EVENT_RISK_SOURCE.RISK_SOURCE_ID))
+            .join(RISK_SOURCE_CATEGORY).on(RISK_SOURCE_CATEGORY.ID.eq(RISK_SOURCE.RISK_SOURCE_CATEGORY_ID))
+            .where(USE_CASE_DAMAGING_EVENT.USE_CASE_ID.in(useCaseID).and(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID.like(like)))
+            .orderBy(RISK_SOURCE_CATEGORY.ID.asc(),RISK_SOURCE.ID.asc(), DAMAGING_EVENT_RISK_SOURCE.DAMAGING_EVENT_ID.asc())
+            .fetch();
 
     return listOfUseCaseRiskSource;
   }

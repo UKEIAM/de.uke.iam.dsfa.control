@@ -10,6 +10,8 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.Record4;
+import org.jooq.Result;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,13 +22,15 @@ import java.util.List;
 import static de.uke.iam.dsfa.control.db.jooq.Tables.USE_CASE_DAMAGING_EVENT;
 
 public class WordWriter {
-    public static void saveFile (XWPFDocument document, String fileName, String filePath) throws IOException {
+    public static String saveFile (XWPFDocument document, String fileName, String filePath) throws IOException {
         File file = new File(filePath + "/" + fileName);
         file.delete();
         file.createNewFile();
         document.write(new FileOutputStream(file));
 
         document.close();
+
+        return filePath + "/" + fileName;
     }
 
     private static void damagingEventFooterWithPageBreak (XWPFDocument document, String sectionDescription ) {
@@ -238,139 +242,139 @@ public class WordWriter {
         runRatingMatrix.setText(value);
     }
 
-    public static XWPFDocument getWord (Integer useCaseID) throws IOException {
+    public static XWPFDocument getWord (List<Integer> useCaseID) throws IOException {
         XWPFDocument document = new XWPFDocument();
 
         DSLContext dsl = DatabaseConfiguration.get().getDsl();
 
-        List<Record> listOfDamagingEventsWithVtr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Vtr%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithVtr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Vtr%");
         for (Record damagingEvent : listOfDamagingEventsWithVtr) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Vertraulichkeit");
 
-        List<Record> listOfDamagingEventsWithMini = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Data-Mini%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithMini = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Data-Mini%");
         for (Record damagingEvent : listOfDamagingEventsWithMini) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Datenminimierung");
 
-        List<Record> listOfDamagingEventsWithVerfüg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Verfüg%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithVerfüg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Verfüg%");
         for (Record damagingEvent : listOfDamagingEventsWithVerfüg) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Verfügbarkeit");
 
-        List<Record> listOfDamagingEventsWithInteg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Integ%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithInteg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Integ%");
         for (Record damagingEvent : listOfDamagingEventsWithInteg) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Integrität");
 
-        List<Record> listOfDamagingEventsWithVerk = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Nicht-Verk%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithVerk = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Nicht-Verk%");
         for (Record damagingEvent : listOfDamagingEventsWithVerk) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Nichtverkettung");
 
-        List<Record> listOfDamagingEventsWithTransp = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Transp%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithTransp = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Transp%");
         for (Record damagingEvent : listOfDamagingEventsWithTransp) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Transparenz");
 
-        List<Record> listOfDamagingEventsWithInterv = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Interv%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithInterv = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Interv%");
         for (Record damagingEvent : listOfDamagingEventsWithInterv) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Intervenierbarkeit");
 
-        List<Record> listOfDamagingEventsWithDiskr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Diskr%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithDiskr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Diskr%");
         for (Record damagingEvent : listOfDamagingEventsWithDiskr) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Diskriminierung");
 
-        List<Record> listOfDamagingEventsWithIdentD = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "IdentD%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithIdentD = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "IdentD%");
         for (Record damagingEvent : listOfDamagingEventsWithIdentD) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Identitätsdiebstahl");
 
-        List<Record> listOfDamagingEventsWithUnDePseud = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "UnDePseud%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithUnDePseud = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "UnDePseud%");
         for (Record damagingEvent : listOfDamagingEventsWithUnDePseud) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "unberechtigten De-Pseudonymisierung");
 
-        List<Record> listOfDamagingEventsWithRecht = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Recht%");
+        Result<Record4<String, Integer, String, String>> listOfDamagingEventsWithRecht = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Recht%");
         for (Record damagingEvent : listOfDamagingEventsWithRecht) {
             damagingEventTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "YYYYY");
 
 
-        List<Record> listOfTomsWithVtr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Vtr%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithVtr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Vtr%");
         for (Record damagingEvent : listOfTomsWithVtr) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Vertraulichkeit");
 
-        List<Record> listOfTomsWithMini = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Data-Mini%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithMini = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Data-Mini%");
         for (Record damagingEvent : listOfTomsWithMini) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Datenminimierung");
 
-        List<Record> listOfTomsWithVerfüg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Verfüg%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithVerfüg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Verfüg%");
         for (Record damagingEvent : listOfTomsWithVerfüg) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Verfügbarkeit");
 
-        List<Record> listOfTomsWithInteg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Integ%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithInteg = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Integ%");
         for (Record damagingEvent : listOfTomsWithInteg) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Integrität");
 
-        List<Record> listOfTomsWithVerk = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Nicht-Verk%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithVerk = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Nicht-Verk%");
         for (Record damagingEvent : listOfTomsWithVerk) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Nichtverkettung");
 
-        List<Record> listOfTomsWithTransp = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Transp%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithTransp = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Transp%");
         for (Record damagingEvent : listOfTomsWithTransp) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Transparenz");
 
-        List<Record> listOfTomsWithInterv = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Interv%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithInterv = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Interv%");
         for (Record damagingEvent : listOfTomsWithInterv) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Intervenierbarkeit");
 
-        List<Record> listOfTomsWithDiskr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Diskr%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithDiskr = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Diskr%");
         for (Record damagingEvent : listOfTomsWithDiskr) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Diskriminierung");
 
-        List<Record> listOfTomsWithIdentD = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "IdentD%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithIdentD = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "IdentD%");
         for (Record damagingEvent : listOfTomsWithIdentD) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "Identitätsdiebstahl");
 
-        List<Record> listOfTomsWithUnDePseud = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "UnDePseud%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithUnDePseud = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "UnDePseud%");
         for (Record damagingEvent : listOfTomsWithUnDePseud) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
         damagingEventFooterWithPageBreak(document, "unberechtigten De-Pseudonymisierung");
 
-        List<Record> listOfTomsWithRecht = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Recht%");
+        Result<Record4<String, Integer, String, String>> listOfTomsWithRecht = DatabaseUtil.selectDamaingEventsByUseCaseIDs(dsl, useCaseID, "Recht%");
         for (Record damagingEvent : listOfTomsWithRecht) {
             tomTemplate(document, dsl, damagingEvent.get(USE_CASE_DAMAGING_EVENT.DAMAGING_EVENT_ID));
         }
