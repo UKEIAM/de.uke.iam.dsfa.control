@@ -13,6 +13,7 @@ import org.jooq.exception.DataAccessException;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -24,17 +25,38 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelReader {
+
+    static String damagingEventHeader = "Schaden-(sereignis)";
+    static List<String> TomHeaders = Arrays.asList("TOM 1", "TOM 2", "TOM 3", "TOM 4", "TOM 5", "TOM 6", "TOM 7", "TOM 8",
+            "TOM 9", "TOM 10", "TOM 11", "TOM 12", "TOM 13");
+    static String probabilityOfOccurrenceHeader = "Eintritts-wahrschein-lichkeit";
+    static String damageSeverityHeader = "Schwere des Schadens";
+    static String riskRatingHeader = "Risiko-abstufung";
+    static String probabilityOfOccurrenceWithTomHeader = "Eintritts-wahrschein-lichkeit mit TOM";
+    static String damageSeverityWithTomHeader = "Schwere des Schadens mit TOM";
+    static String residualRiskRatingHeader = "Rest-Risiko-abstufung";
+    static String riskSourceHeader = "Risiko-quelle";
+    static String totalSheetName = "gesamt";
+    static String damagingEventSheetName = "Darstellung Schaden(sereignis)";
+    static String probabilityOfOccurrenceSheetName = "Begr EW";
+    static String damageSeveritySheetName ="Begr SdS";
+    static String probabilityOfOccurrenceWithTomSheetName = "Begr EW m. TOM";
+    static String damageSeverityWithTomSheetName = "Begr SdS m. TOM";
+    static String TomsSheetName = "TOMs";
     static DSLContext dsl = DatabaseConfiguration.get().getDsl();
 
     static ExcelReaderResponse response = new ExcelReaderResponse();
     static List<String> errorLines = new ArrayList<String>();
-
-    public static List<String> getErrorLines() {
-        return errorLines;
-    }
-
     public static ExcelReaderResponse getResponse() {
         return response;
+    }
+
+    public static void checkHeaders(){
+
+    }
+
+    public static void checkSheetNames(){
+
     }
 
     //check if the name of the sheet corresponds
@@ -156,110 +178,31 @@ public class ExcelReader {
 
     }
 
-    // read the value of each row
-    private static void ProcessTomCells(HashMap<String, Integer> columnIndexes, Row row)
-            throws DataAccessException {
-
-        String damagingEventId = row.getCell(columnIndexes.get("Schaden-(sereignis)"))
-                .getStringCellValue();
-        Cell tom1Cell = row.getCell(columnIndexes.get("TOM 1"));
-        Cell tom2Cell = row.getCell(columnIndexes.get("TOM 2"));
-        Cell tom3Cell = row.getCell(columnIndexes.get("TOM 3"));
-        Cell tom4Cell = row.getCell(columnIndexes.get("TOM 4"));
-        Cell tom5Cell = row.getCell(columnIndexes.get("TOM 5"));
-        Cell tom6Cell = row.getCell(columnIndexes.get("TOM 6"));
-        Cell tom7Cell = row.getCell(columnIndexes.get("TOM 7"));
-        Cell tom8Cell = row.getCell(columnIndexes.get("TOM 8"));
-        Cell tom9Cell = row.getCell(columnIndexes.get("TOM 9"));
-        Cell tom10Cell = row.getCell(columnIndexes.get("TOM 10"));
-        Cell tom11Cell = row.getCell(columnIndexes.get("TOM 11"));
-        Cell tom12Cell = row.getCell(columnIndexes.get("TOM 12"));
-        Cell tom13Cell = row.getCell(columnIndexes.get("TOM 13"));
-        if (tom1Cell != null) {
-            String tom1 = tom1Cell.getStringCellValue();
+    private static void ProcessTomCell(HashMap<String, Integer> columnIndexes, Row row, String tomHeader,
+                                       String damagingEventId){
+        Cell tomCell = row.getCell(columnIndexes.get(tomHeader));
+        if (tomCell != null) {
+            String tom1 = tomCell.getStringCellValue();
             if (!tom1.equals("")) {
                 DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom1);
             }
         }
-        if (tom2Cell != null) {
-            String tom2 = tom2Cell.getStringCellValue();
-            if (!tom2.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom2);
-            }
-        }
-        if (tom3Cell != null) {
-            String tom3 = tom3Cell.getStringCellValue();
-            if (!tom3.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom3);
-            }
-        }
-        if (tom4Cell != null) {
-            String tom4 = tom4Cell.getStringCellValue();
-            if (!tom4.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom4);
-            }
-        }
-        if (tom5Cell != null) {
-            String tom5 = tom5Cell.getStringCellValue();
-            if (!tom5.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom5);
-            }
-        }
-        if (tom6Cell != null) {
-            String tom6 = tom6Cell.getStringCellValue();
-            if (!tom6.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom6);
-            }
-        }
-        if (tom7Cell != null) {
-            String tom7 = tom7Cell.getStringCellValue();
-            if (!tom7.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom7);
-            }
-        }
-        if (tom8Cell != null) {
-            String tom8 = tom8Cell.getStringCellValue();
-            if (!tom8.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom8);
-            }
-        }
-        if (tom9Cell != null) {
-            String tom9 = tom9Cell.getStringCellValue();
-            if (!tom9.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom9);
-            }
-        }
-        if (tom10Cell != null) {
-            String tom10 = tom10Cell.getStringCellValue();
-            if (!tom10.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom10);
-            }
-        }
-        if (tom11Cell != null) {
-            String tom11 = tom11Cell.getStringCellValue();
-            if (!tom11.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom11);
-            }
-        }
-        if (tom12Cell != null) {
-            String tom12 = tom12Cell.getStringCellValue();
-            if (!tom12.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom12);
-            }
-        }
-        if (tom13Cell != null) {
-            String tom13 = tom13Cell.getStringCellValue();
-            if (!tom13.equals("")) {
-                DatabaseUtil.insertDamagingEventTom(dsl, damagingEventId, tom13);
-            }
-        }
+    }
 
+    // read the value of each row
+    private static void ProcessTomCells(HashMap<String, Integer> columnIndexes, Row row)
+            throws DataAccessException {
+        String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader))
+                .getStringCellValue();
+        for (String tomHeader : TomHeaders) {
+            ProcessTomCell(columnIndexes, row, tomHeader, damagingEventId);
+        }
     }
 
     public static void ProcessUsecaseCells(HashMap<String, Integer> columnIndexes, Row row,
                                            HashMap<String, Integer> usecaseNameId) throws DataAccessException {
-        String riskSourceId = row.getCell(columnIndexes.get("Risiko-quelle")).getStringCellValue();
-        String damagingEventId = row.getCell(columnIndexes.get("Schaden-(sereignis)")).getStringCellValue();
+        String riskSourceId = row.getCell(columnIndexes.get(riskSourceHeader)).getStringCellValue();
+        String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader)).getStringCellValue();
         for (String usecaseCellName : usecaseNameId.keySet()) {
             if (row.getCell(columnIndexes.get(usecaseCellName)) != null) {
                 // get the value of the cell for each usecase column
@@ -286,29 +229,29 @@ public class ExcelReader {
                                                           HashMap<String, String> probabilityOfOccurrenceWithTom,
                                                           HashMap<String, String> damageSeverityWithTom) throws DataAccessException {
 
-        String damagingEventId = row.getCell(columnIndexes.get("Schaden-(sereignis)"))
+        String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader))
                 .getStringCellValue();
         // get the Integer Values of the row
         Integer probabilityOfOccurrenceValue =
-                (int) row.getCell(columnIndexes.get("Eintritts-wahrschein-lichkeit"))
+                (int) row.getCell(columnIndexes.get(probabilityOfOccurrenceHeader))
                         .getNumericCellValue();
 
         Integer damageSeverityValue =
-                (int) row.getCell(columnIndexes.get("Schwere des Schadens")).getNumericCellValue();
+                (int) row.getCell(columnIndexes.get(damageSeverityHeader)).getNumericCellValue();
 
         Integer riskRatingValue =
-                (int) row.getCell(columnIndexes.get("Risiko-abstufung")).getNumericCellValue();
+                (int) row.getCell(columnIndexes.get(riskRatingHeader)).getNumericCellValue();
 
         Integer probabilityOfOccurrenceWithTomValue =
-                (int) row.getCell(columnIndexes.get("Eintritts-wahrschein-lichkeit mit TOM"))
+                (int) row.getCell(columnIndexes.get(probabilityOfOccurrenceWithTomHeader))
                         .getNumericCellValue();
 
         Integer damageSeverityWithTomValue =
-                (int) row.getCell(columnIndexes.get("Schwere des Schadens mit TOM"))
+                (int) row.getCell(columnIndexes.get(damageSeverityWithTomHeader))
                         .getNumericCellValue();
 
         Integer residualRiskRatingValue =
-                (int) row.getCell(columnIndexes.get("Rest-Risiko-abstufung"))
+                (int) row.getCell(columnIndexes.get(residualRiskRatingHeader))
                         .getNumericCellValue();
 
         // set DamagingEvent Element
@@ -348,8 +291,8 @@ public class ExcelReader {
         HashMap<String, Integer> columnIndexes = new HashMap<>();
         HashMap<String, Integer> usecaseNameId = new HashMap<>();
 
-        XSSFSheet sheet = workbook.getSheet("gesamt");
-
+        XSSFSheet sheet = workbook.getSheet(totalSheetName);
+        long startTime = System.nanoTime();
         for (Row row : sheet) {
 
             Integer rowNr = row.getRowNum();
@@ -384,10 +327,10 @@ public class ExcelReader {
             else if (rowNr > 1 && row.getCell(0) != null && !row.getCell(0).getStringCellValue().equals("")) {
 
                 // Get the values of damagingEvent and riskSource from the cell
-                String damagingEventId = row.getCell(columnIndexes.get("Schaden-(sereignis)"))
+                String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader))
                         .getStringCellValue();
 
-                String riskSourceId = row.getCell(columnIndexes.get("Risiko-quelle")).getStringCellValue();
+                String riskSourceId = row.getCell(columnIndexes.get(riskSourceHeader)).getStringCellValue();
 
                 DamagingEvent damagingEvent = ProcessDamagingEventCells(columnIndexes, row,
                         damagingEventHashMap, probabilityOfOccurrence, damageSeverity,
@@ -426,6 +369,9 @@ public class ExcelReader {
 
             }
         }
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+        System.out.println("Time of Process Total Sheet is : " + duration);
     }
 
     public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
@@ -450,39 +396,35 @@ public class ExcelReader {
             for (Sheet sheet : workbook) {
                 String actualSheetName = sheet.getSheetName();
 
-                if (actualSheetName.equals("Darstellung Schaden(sereignis)")) {
+                if (actualSheetName.equals(damagingEventSheetName)) {
                     damagingEvent = sheetToHashMap(sheet, 0);
                 }
-                if (actualSheetName.equals("Begr EW")) {
+                else if (actualSheetName.equals(probabilityOfOccurrenceSheetName)) {
                     probabilityOfOccurrence = sheetToHashMap(sheet, 0);
                 }
-                if (actualSheetName.equals("Begr SdS")) {
+                else if (actualSheetName.equals(damageSeveritySheetName)) {
                     damageSeverity = sheetToHashMap(sheet, 0);
                 }
-                if (actualSheetName.equals("Begr EW m. TOM")) {
-                    probabilityOfOccurrenceWithTom = sheetToHashMap(sheet,
-                            0);
-                }
-                if (actualSheetName.equals("Begr SdS m. TOM")) {
-                    damageSeverityWithTom = sheetToHashMap(sheet, 0);
-                }
-                if (actualSheetName.equals("TOMs")) {
-                    ProcessTomsSheet(sheet);
-                }
-                if (isRiskSourceSheet(actualSheetName)) {
+                else if (isRiskSourceSheet(actualSheetName)) {
                     String riskSourceCategoryDescription = getRiskSourceCategoryFromSheetName(
                             actualSheetName);
                     DatabaseUtil.insertRiskSourceCategory(dsl, riskSourceCategoryDescription);
                     ProcessRiskSourcesSheet(sheet, riskSourceCategoryDescription);
                 }
+                else if (actualSheetName.equals(TomsSheetName)) {
+                    ProcessTomsSheet(sheet);
+                }
+                else if (actualSheetName.equals(probabilityOfOccurrenceWithTomSheetName)) {
+                    probabilityOfOccurrenceWithTom = sheetToHashMap(sheet,
+                            0);
+                }
+                else if (actualSheetName.equals(damageSeverityWithTomSheetName)) {
+                    damageSeverityWithTom = sheetToHashMap(sheet, 0);
+                }
             }
 
-            ProcessTotalSheet(workbook,
-                    damagingEvent,
-                    probabilityOfOccurrence,
-                    damageSeverity,
-                    probabilityOfOccurrenceWithTom,
-                    damageSeverityWithTom);
+            ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
+                    probabilityOfOccurrenceWithTom, damageSeverityWithTom);
 
             file.close();
         } catch (IOException e) {
