@@ -30,11 +30,17 @@ public class AdminRestService {
     })
     public Response uploadExcel(@FormDataParam("file") InputStream fileInputStream,
                                 @FormDataParam("file") FormDataContentDisposition fileFormDataContentDisposition) throws IOException {
-        ExcelReader.readFile(fileInputStream);
-        ExcelReaderResponse excelReaderResponse = ExcelReader.getResponse();
-        ObjectMapper mapper = new ObjectMapper();
-        String response = mapper.writeValueAsString(excelReaderResponse);
-        return Response.status(Response.Status.OK).entity(response).build();
+        try {
+            ExcelReader.readFile(fileInputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            ExcelReaderResponse excelReaderResponse = ExcelReader.getResponse();
+            ObjectMapper mapper = new ObjectMapper();
+            String response = mapper.writeValueAsString(excelReaderResponse);
+            return Response.status(Response.Status.OK).entity(response).build();
+        }
+
     }
 
 }
