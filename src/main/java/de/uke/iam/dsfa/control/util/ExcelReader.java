@@ -6,7 +6,7 @@ import de.uke.iam.dsfa.control.db.jooq.tables.pojos.DamagingEvent;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.RiskSource;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.Tom;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.UseCase;
-import de.uke.iam.dsfa.control.model.ExcelReaderResponse;
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 
@@ -27,7 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelReader {
 
     static String damagingEventHeader = "Schaden-(sereignis)";
-    static List<String> TomHeaders = Arrays.asList("TOM 1", "TOM 2", "TOM 3", "TOM 4", "TOM 5", "TOM 6", "TOM 7", "TOM 8",
+    static List<String> tomHeaders = Arrays.asList("TOM 1", "TOM 2", "TOM 3", "TOM 4", "TOM 5", "TOM 6", "TOM 7", "TOM 8",
             "TOM 9", "TOM 10", "TOM 11", "TOM 12", "TOM 13");
     static String probabilityOfOccurrenceHeader = "Eintritts-wahrschein-lichkeit";
     static String damageSeverityHeader = "Schwere des Schadens";
@@ -43,20 +43,16 @@ public class ExcelReader {
     static String probabilityOfOccurrenceWithTomSheetName = "Begr EW m. TOM";
     static String damageSeverityWithTomSheetName = "Begr SdS m. TOM";
     static String TomsSheetName = "TOMs";
+
     static DSLContext dsl = DatabaseConfiguration.get().getDsl();
+    static List<String> errorLines;
 
-    static ExcelReaderResponse response = new ExcelReaderResponse();
-    static List<String> errorLines = new ArrayList<String>();
-    public static ExcelReaderResponse getResponse() {
-        return response;
+    public static List<String> getErrorLines() {
+        return errorLines;
     }
 
-    public static void checkHeaders(){
-
-    }
-
-    public static void checkSheetNames(){
-
+    public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
+        return new FileInputStream(file);
     }
 
     //check if the name of the sheet corresponds
@@ -194,7 +190,7 @@ public class ExcelReader {
             throws DataAccessException {
         String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader))
                 .getStringCellValue();
-        for (String tomHeader : TomHeaders) {
+        for (String tomHeader : tomHeaders) {
             ProcessTomCell(columnIndexes, row, tomHeader, damagingEventId);
         }
     }
@@ -371,14 +367,11 @@ public class ExcelReader {
         }
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
-        System.out.println("Time of Process Total Sheet is : " + duration);
+//        System.out.println("Time of Process Total Sheet is : " + duration);
     }
 
-    public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
-        return new FileInputStream(file);
-    }
 
-    public static void readFile(InputStream file) {
+    public static void readFile(InputStream file) throws IOException, NotOfficeXmlFileException {
         DSLContext dsl = DatabaseConfiguration.get().getDsl();
         /*  delete all entries of all tables to write a new entries */
         DatabaseUtil.truncateAllTables(dsl);
@@ -388,11 +381,9 @@ public class ExcelReader {
         HashMap<String, String> damageSeverity = null;
         HashMap<String, String> probabilityOfOccurrenceWithTom = null;
         HashMap<String, String> damageSeverityWithTom = null;
-
-        try {
-            //Create Workbook instance holding reference to .xlsx file
-            XSSFWorkbook workbook = new XSSFWorkbook(file);
-
+        errorLines = new ArrayList<>();
+        XSSFWorkbook workbook = new XSSFWorkbook(file);
+        if (workbook != null){
             for (Sheet sheet : workbook) {
                 String actualSheetName = sheet.getSheetName();
 
@@ -422,27 +413,18 @@ public class ExcelReader {
                     damageSeverityWithTom = sheetToHashMap(sheet, 0);
                 }
             }
-
-            ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
-                    probabilityOfOccurrenceWithTom, damageSeverityWithTom);
-
-            file.close();
-        } catch (IOException e) {
-            errorLines.add("Error by reading file");
-            response.setStatus("ERROR");
-            response.setComments(errorLines);
+            if(workbook.getSheet(totalSheetName) != null){
+                ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
+                        probabilityOfOccurrenceWithTom, damageSeverityWithTom);
+            }
+            else {
+                errorLines.add(totalSheetName + " sheet could not be found in your excel file");
+            }
         }
         // if errors are found, then save them to log file
         if (!errorLines.isEmpty()) {
-            response.setStatus("ERROR");
-            response.setComments(errorLines);
             // if any errors are occurs then delete all values in the tables
             DatabaseUtil.truncateAllTables(dsl);
-            // no errors found
-        } else {
-            response.setStatus("DONE");
-            errorLines.add("No Problems are detected by importing");
-            response.setComments(errorLines);
         }
     }
 }
