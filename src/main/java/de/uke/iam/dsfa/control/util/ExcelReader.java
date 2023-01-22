@@ -27,7 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelReader {
 
     static String damagingEventHeader = "Schaden-(sereignis)";
-    static List<String> TomHeaders = Arrays.asList("TOM 1", "TOM 2", "TOM 3", "TOM 4", "TOM 5", "TOM 6", "TOM 7", "TOM 8",
+    static List<String> tomHeaders = Arrays.asList("TOM 1", "TOM 2", "TOM 3", "TOM 4", "TOM 5", "TOM 6", "TOM 7", "TOM 8",
             "TOM 9", "TOM 10", "TOM 11", "TOM 12", "TOM 13");
     static String probabilityOfOccurrenceHeader = "Eintritts-wahrschein-lichkeit";
     static String damageSeverityHeader = "Schwere des Schadens";
@@ -43,6 +43,7 @@ public class ExcelReader {
     static String probabilityOfOccurrenceWithTomSheetName = "Begr EW m. TOM";
     static String damageSeverityWithTomSheetName = "Begr SdS m. TOM";
     static String TomsSheetName = "TOMs";
+
     static DSLContext dsl = DatabaseConfiguration.get().getDsl();
 
     static ExcelReaderResponse response = new ExcelReaderResponse();
@@ -51,11 +52,45 @@ public class ExcelReader {
         return response;
     }
 
-    public static void checkHeaders(){
+    public static XSSFWorkbook checkFileStructure(InputStream file) {
+        List<String> headers = new ArrayList<String>(Arrays.asList(damagingEventHeader, damageSeverityHeader, riskRatingHeader, probabilityOfOccurrenceWithTomHeader,
+            damageSeverityWithTomHeader, residualRiskRatingHeader, riskSourceHeader));
+        List<String> sheets = Arrays.asList(totalSheetName, damagingEventSheetName, probabilityOfOccurrenceSheetName, damageSeveritySheetName,
+            probabilityOfOccurrenceWithTomSheetName, damageSeverityWithTomSheetName, TomsSheetName);
+        try{
+            //Create Workbook instance holding reference to .xlsx file
+            XSSFWorkbook workbook = new XSSFWorkbook(file);
+            for (Sheet sheet : workbook) {
+                String actualSheetName = sheet.getSheetName();
+                if (sheets.contains(actualSheetName)) {
+                    if(actualSheetName.equals(totalSheetName)){
+                        XSSFSheet totalsheet = workbook.getSheet(totalSheetName);
+                        for (Row row : totalsheet) {
+                            Integer rowNr = row.getRowNum();
+                            if (rowNr == 1) {
+                                for (Cell cell : row) {
+                                    if (!headers.contains(cell.getStringCellValue())) {
+                                        errorLines.add("The Header '" + cell.getStringCellValue() + "' in 'gesamt' sheet could not be"
+                                            + " recognize, please provide a file with the right structure");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    errorLines.add("The Sheet '" + actualSheetName + "' could not be"
+                        + " recognize, please provide a file with the right structure");
+                }
+            }
+            return workbook;
+        } catch (IOException e){
+            errorLines.add("Error by reading file, please provide an excel file");
+            response.setStatus("ERROR");
+            response.setComments(errorLines);
+            e.printStackTrace();
+            return null;
+        }
 
-    }
-
-    public static void checkSheetNames(){
 
     }
 
@@ -194,7 +229,7 @@ public class ExcelReader {
             throws DataAccessException {
         String damagingEventId = row.getCell(columnIndexes.get(damagingEventHeader))
                 .getStringCellValue();
-        for (String tomHeader : TomHeaders) {
+        for (String tomHeader : tomHeaders) {
             ProcessTomCell(columnIndexes, row, tomHeader, damagingEventId);
         }
     }
@@ -389,10 +424,8 @@ public class ExcelReader {
         HashMap<String, String> probabilityOfOccurrenceWithTom = null;
         HashMap<String, String> damageSeverityWithTom = null;
 
-        try {
-            //Create Workbook instance holding reference to .xlsx file
-            XSSFWorkbook workbook = new XSSFWorkbook(file);
-
+        XSSFWorkbook workbook = checkFileStructure(file);
+        if (workbook != null){
             for (Sheet sheet : workbook) {
                 String actualSheetName = sheet.getSheetName();
 
@@ -407,7 +440,7 @@ public class ExcelReader {
                 }
                 else if (isRiskSourceSheet(actualSheetName)) {
                     String riskSourceCategoryDescription = getRiskSourceCategoryFromSheetName(
-                            actualSheetName);
+                        actualSheetName);
                     DatabaseUtil.insertRiskSourceCategory(dsl, riskSourceCategoryDescription);
                     ProcessRiskSourcesSheet(sheet, riskSourceCategoryDescription);
                 }
@@ -416,21 +449,21 @@ public class ExcelReader {
                 }
                 else if (actualSheetName.equals(probabilityOfOccurrenceWithTomSheetName)) {
                     probabilityOfOccurrenceWithTom = sheetToHashMap(sheet,
-                            0);
+                        0);
                 }
                 else if (actualSheetName.equals(damageSeverityWithTomSheetName)) {
                     damageSeverityWithTom = sheetToHashMap(sheet, 0);
                 }
             }
-
-            ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
+            if(workbook.getSheet(totalSheetName) != null){
+                ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
                     probabilityOfOccurrenceWithTom, damageSeverityWithTom);
-
-            file.close();
-        } catch (IOException e) {
-            errorLines.add("Error by reading file");
-            response.setStatus("ERROR");
-            response.setComments(errorLines);
+            }
+            else {
+                errorLines.add(totalSheetName + " sheet could not be found in your excel file");
+                response.setStatus("ERROR");
+                response.setComments(errorLines);
+            }
         }
         // if errors are found, then save them to log file
         if (!errorLines.isEmpty()) {
