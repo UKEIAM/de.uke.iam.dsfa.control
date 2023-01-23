@@ -6,7 +6,7 @@ import de.uke.iam.dsfa.control.db.jooq.tables.pojos.DamagingEvent;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.RiskSource;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.Tom;
 import de.uke.iam.dsfa.control.db.jooq.tables.pojos.UseCase;
-import de.uke.iam.dsfa.control.model.ExcelReaderResponse;
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 
@@ -45,53 +45,14 @@ public class ExcelReader {
     static String TomsSheetName = "TOMs";
 
     static DSLContext dsl = DatabaseConfiguration.get().getDsl();
+    static List<String> errorLines;
 
-    static ExcelReaderResponse response = new ExcelReaderResponse();
-    static List<String> errorLines = new ArrayList<String>();
-    public static ExcelReaderResponse getResponse() {
-        return response;
+    public static List<String> getErrorLines() {
+        return errorLines;
     }
 
-    public static XSSFWorkbook checkFileStructure(InputStream file) {
-        List<String> headers = new ArrayList<String>(Arrays.asList(damagingEventHeader, damageSeverityHeader, riskRatingHeader, probabilityOfOccurrenceWithTomHeader,
-            damageSeverityWithTomHeader, residualRiskRatingHeader, riskSourceHeader));
-        List<String> sheets = Arrays.asList(totalSheetName, damagingEventSheetName, probabilityOfOccurrenceSheetName, damageSeveritySheetName,
-            probabilityOfOccurrenceWithTomSheetName, damageSeverityWithTomSheetName, TomsSheetName);
-        try{
-            //Create Workbook instance holding reference to .xlsx file
-            XSSFWorkbook workbook = new XSSFWorkbook(file);
-            for (Sheet sheet : workbook) {
-                String actualSheetName = sheet.getSheetName();
-                if (sheets.contains(actualSheetName)) {
-                    if(actualSheetName.equals(totalSheetName)){
-                        XSSFSheet totalsheet = workbook.getSheet(totalSheetName);
-                        for (Row row : totalsheet) {
-                            Integer rowNr = row.getRowNum();
-                            if (rowNr == 1) {
-                                for (Cell cell : row) {
-                                    if (!headers.contains(cell.getStringCellValue())) {
-                                        errorLines.add("The Header '" + cell.getStringCellValue() + "' in 'gesamt' sheet could not be"
-                                            + " recognize, please provide a file with the right structure");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    errorLines.add("The Sheet '" + actualSheetName + "' could not be"
-                        + " recognize, please provide a file with the right structure");
-                }
-            }
-            return workbook;
-        } catch (IOException e){
-            errorLines.add("Error by reading file, please provide an excel file");
-            response.setStatus("ERROR");
-            response.setComments(errorLines);
-            e.printStackTrace();
-            return null;
-        }
-
-
+    public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
+        return new FileInputStream(file);
     }
 
     //check if the name of the sheet corresponds
@@ -406,14 +367,11 @@ public class ExcelReader {
         }
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
-        System.out.println("Time of Process Total Sheet is : " + duration);
+//        System.out.println("Time of Process Total Sheet is : " + duration);
     }
 
-    public static FileInputStream fileToInputStream(File file) throws FileNotFoundException {
-        return new FileInputStream(file);
-    }
 
-    public static void readFile(InputStream file) {
+    public static void readFile(InputStream file) throws IOException, NotOfficeXmlFileException {
         DSLContext dsl = DatabaseConfiguration.get().getDsl();
         /*  delete all entries of all tables to write a new entries */
         DatabaseUtil.truncateAllTables(dsl);
@@ -423,8 +381,8 @@ public class ExcelReader {
         HashMap<String, String> damageSeverity = null;
         HashMap<String, String> probabilityOfOccurrenceWithTom = null;
         HashMap<String, String> damageSeverityWithTom = null;
-
-        XSSFWorkbook workbook = checkFileStructure(file);
+        errorLines = new ArrayList<>();
+        XSSFWorkbook workbook = new XSSFWorkbook(file);
         if (workbook != null){
             for (Sheet sheet : workbook) {
                 String actualSheetName = sheet.getSheetName();
@@ -440,7 +398,7 @@ public class ExcelReader {
                 }
                 else if (isRiskSourceSheet(actualSheetName)) {
                     String riskSourceCategoryDescription = getRiskSourceCategoryFromSheetName(
-                        actualSheetName);
+                            actualSheetName);
                     DatabaseUtil.insertRiskSourceCategory(dsl, riskSourceCategoryDescription);
                     ProcessRiskSourcesSheet(sheet, riskSourceCategoryDescription);
                 }
@@ -449,7 +407,7 @@ public class ExcelReader {
                 }
                 else if (actualSheetName.equals(probabilityOfOccurrenceWithTomSheetName)) {
                     probabilityOfOccurrenceWithTom = sheetToHashMap(sheet,
-                        0);
+                            0);
                 }
                 else if (actualSheetName.equals(damageSeverityWithTomSheetName)) {
                     damageSeverityWithTom = sheetToHashMap(sheet, 0);
@@ -457,25 +415,16 @@ public class ExcelReader {
             }
             if(workbook.getSheet(totalSheetName) != null){
                 ProcessTotalSheet(workbook, damagingEvent, probabilityOfOccurrence, damageSeverity,
-                    probabilityOfOccurrenceWithTom, damageSeverityWithTom);
+                        probabilityOfOccurrenceWithTom, damageSeverityWithTom);
             }
             else {
                 errorLines.add(totalSheetName + " sheet could not be found in your excel file");
-                response.setStatus("ERROR");
-                response.setComments(errorLines);
             }
         }
         // if errors are found, then save them to log file
         if (!errorLines.isEmpty()) {
-            response.setStatus("ERROR");
-            response.setComments(errorLines);
             // if any errors are occurs then delete all values in the tables
             DatabaseUtil.truncateAllTables(dsl);
-            // no errors found
-        } else {
-            response.setStatus("DONE");
-            errorLines.add("No Problems are detected by importing");
-            response.setComments(errorLines);
         }
     }
 }
