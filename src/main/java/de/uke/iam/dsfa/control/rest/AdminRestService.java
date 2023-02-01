@@ -3,6 +3,15 @@ package de.uke.iam.dsfa.control.rest;
 import de.uke.iam.dsfa.control.model.ExcelReaderResponse;
 import de.uke.iam.dsfa.control.util.ExcelReader;
 import io.swagger.annotations.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import javax.ws.rs.GET;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response.Status;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -17,9 +26,44 @@ import java.io.*;
 import java.util.List;
 
 @Path("/admin")
-@Api(value = "Admin")
+@Api(value = "admin")
 @SwaggerDefinition(tags = {@Tag(name = "Admin Service", description = "REST Endpoint Service for Admin")})
 public class AdminRestService {
+
+    private String[] basicAuthDecoder(String authHeader){
+        byte[] decodedBytes = Base64.getDecoder().decode(authHeader.split(" ")[1]);
+        String pair = new String(decodedBytes, StandardCharsets.UTF_8);
+        return pair.split(":");
+    }
+
+    @Path("/login")
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(consumes=MediaType.APPLICATION_JSON, value = "Check if the user is admin", httpMethod="PUT", response = Response.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, response = Response.class, message = "Successful operation"),
+        @ApiResponse(code = 401, message = "Bad Request - The structure of the excel file is not as expected"),
+    })
+    public Response checkIfAdmin(@Context HttpHeaders headers) throws ConfigurationException {
+        // get username and password from config file
+        Configurations configs = new Configurations();
+        XMLConfiguration config = configs.xml("dsfa.control.config.xml");
+        String adminName = config.getString("admin.username");
+        String adminPassword = config.getString("admin.password");
+        // get username and password from header
+        String authHeader = headers.getHeaderString("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Basic")) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        String[] credentials = basicAuthDecoder(authHeader);
+        String username = credentials[0];
+        String password = credentials[1];
+        // compare
+        if(adminName.equals(username) && adminPassword.equals(password)){
+            return Response.ok().build();
+        }
+        return Response.status(Status.UNAUTHORIZED).build();
+    }
 
     @Path("/uploadexcel")
     @POST
