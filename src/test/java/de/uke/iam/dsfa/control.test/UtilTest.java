@@ -20,29 +20,22 @@ import java.util.List;
 public class UtilTest  {
     private Logger logger = LoggerFactory.getLogger(UtilTest.class);
     @Test
-    public void ExcelReaderTest() throws FileNotFoundException {
+    public void ExcelReaderTest() throws IOException {
         // Nutzt bitte den Filefinder oder den Classloader, um Dateien aus "resources" zu laden
         File excelFile = FileFinderUtil.findFile("example.xlsx");
 
         logger.debug("Found file: " + excelFile.getAbsolutePath());
         FileInputStream file = ExcelReader.fileToInputStream(excelFile);
         ExcelReader.readFile(file);
-        ExcelReaderResponse response = ExcelReader.getResponse();
-        System.out.println(response.getStatus());
     }
     @Test
-    public void ExcelReaderWithErrorsTest() throws FileNotFoundException {
+    public void ExcelReaderWithErrorsTest() throws IOException {
         // Nutzt bitte den Filefinder oder den Classloader, um Dateien aus "resources" zu laden
         File excelFile = FileFinderUtil.findFile("exampleWithErrors.xlsx");
 
         logger.debug("Found file: " + excelFile.getAbsolutePath());
         FileInputStream file = ExcelReader.fileToInputStream(excelFile);
         ExcelReader.readFile(file);
-        ExcelReaderResponse response = ExcelReader.getResponse();
-        System.out.println(response.getStatus());
-        for (String comment : response.getComments()) {
-            System.out.println(comment);
-        }
     }
 
     @Test
