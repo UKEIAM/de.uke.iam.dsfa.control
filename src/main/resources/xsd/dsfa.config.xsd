@@ -12,12 +12,19 @@
   <xs:complexType name="dsfa">
     <xs:sequence>
       <xs:element type="databaseConnection" name="databaseConnection"/>
+      <xs:element type="admin" name="admin"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="databaseConnection">
     <xs:sequence>
       <xs:element type="xs:string" name="host"/>
       <xs:element type="xs:string" name="database"/>
+      <xs:element type="xs:string" name="username"/>
+      <xs:element type="xs:string" name="password"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="admin">
+    <xs:sequence>
       <xs:element type="xs:string" name="username"/>
       <xs:element type="xs:string" name="password"/>
     </xs:sequence>
