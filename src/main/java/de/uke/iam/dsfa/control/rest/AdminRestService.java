@@ -42,7 +42,7 @@ public class AdminRestService {
     @ApiOperation(consumes=MediaType.APPLICATION_JSON, value = "Check if the user is admin", httpMethod="PUT", response = Response.class)
     @ApiResponses(value = {
         @ApiResponse(code = 200, response = Response.class, message = "Successful operation"),
-        @ApiResponse(code = 401, message = "Bad Request - The structure of the excel file is not as expected"),
+        @ApiResponse(code = 401, message = "Unauthorized - The provided credentials are unknown"),
     })
     public Response checkIfAdmin(@Context HttpHeaders headers) throws ConfigurationException {
         // get username and password from config file
