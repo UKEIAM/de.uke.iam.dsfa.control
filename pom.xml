@@ -294,16 +294,11 @@
       <artifactId>poi-ooxml</artifactId>
       <version>5.0.0</version>
     </dependency>
-    <!-- Commons library -->
+    <!-- dotenv library to read env files -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-configuration2</artifactId>
-      <version>2.7</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-      <version>1.9.4</version>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>2.3.2</version>
     </dependency>
   </dependencies>
 

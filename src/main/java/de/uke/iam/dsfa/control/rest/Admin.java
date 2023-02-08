@@ -2,6 +2,7 @@ package de.uke.iam.dsfa.control.rest;
 
 import de.uke.iam.dsfa.control.model.ExcelReaderResponse;
 import de.uke.iam.dsfa.control.util.ExcelReader;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.annotations.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -9,9 +10,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -28,7 +26,7 @@ import java.util.List;
 @Path("/admin")
 @Api(value = "admin")
 @SwaggerDefinition(tags = {@Tag(name = "Admin Service", description = "REST Endpoint Service for Admin")})
-public class AdminRestService {
+public class Admin {
 
     private String[] basicAuthDecoder(String authHeader){
         byte[] decodedBytes = Base64.getDecoder().decode(authHeader.split(" ")[1]);
@@ -39,17 +37,20 @@ public class AdminRestService {
     @Path("/login")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
-    @ApiOperation(consumes=MediaType.APPLICATION_JSON, value = "Check if the user is admin", httpMethod="PUT", response = Response.class)
+    @ApiOperation(consumes=MediaType.APPLICATION_JSON, value = "Check if the user is admin", httpMethod="GET", response = Response.class)
     @ApiResponses(value = {
         @ApiResponse(code = 200, response = Response.class, message = "Successful operation"),
         @ApiResponse(code = 401, message = "Unauthorized - The provided credentials are unknown"),
     })
-    public Response checkIfAdmin(@Context HttpHeaders headers) throws ConfigurationException {
-        // get username and password from config file
-        Configurations configs = new Configurations();
-        XMLConfiguration config = configs.xml("dsfa.control.config.xml");
-        String adminName = config.getString("admin.username");
-        String adminPassword = config.getString("admin.password");
+    public Response checkIfAdmin(@Context HttpHeaders headers) {
+        // get username and password from env file
+        Dotenv dotenv = Dotenv.configure()
+            .directory("")
+            .ignoreIfMalformed()
+            .ignoreIfMissing()
+            .load();
+        String adminName = dotenv.get("DSFA_ADMIN");
+        String adminPassword = dotenv.get("DSFA_PASSWORD");
         // get username and password from header
         String authHeader = headers.getHeaderString("Authorization");
         if (authHeader == null || !authHeader.startsWith("Basic")) {

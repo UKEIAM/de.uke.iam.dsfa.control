@@ -6,8 +6,4 @@
     <password>password</password>
   </databaseConnection>
 
-  <admin>
-  	<username>omar</username>
-  	<password>test1234</password>
-  </admin>
 </dsfa>
