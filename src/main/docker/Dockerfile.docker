@@ -3,4 +3,4 @@ FROM tomcat:8.5.81-jdk8-corretto
 # environment properties
 ENV JAVA_OPTS "-Djava.security.egd=/dev/./urandom -Djava.awt.headless=true -Xmx1024m -XX:MaxPermSize=512m -XX:+UseConcMarkSweepGC"
 
-COPY /control.war /usr/local/tomcat/webapps/
+COPY /dsfa_control.war /usr/local/tomcat/webapps/
