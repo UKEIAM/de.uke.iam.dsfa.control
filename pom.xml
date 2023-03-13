@@ -17,10 +17,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <excludeResource/>
+
+    <dockerImageName>dsfa_control</dockerImageName>
   </properties>
 
   <build>
-    <finalName>control</finalName>
+    <finalName>dsfa_control</finalName>
 
     <resources>
       <resource>
@@ -352,7 +354,7 @@
                     <exec executable="docker">
                       <arg value="build" />
                       <arg value="-t" />
-                      <arg value="${project.build.finalName}:${project.version}" />
+                      <arg value="${dockerImageName}:${project.version}" />
                       <arg value="-f" />
                       <arg value="target/Dockerfile.docker" />
                       <arg value="target" />
@@ -385,12 +387,12 @@
                   <target>
                     <exec executable="docker">
                       <arg value="tag" />
-                      <arg value="${project.build.finalName}:${project.version}" />
-                      <arg value="dockerreg.fordo.de/${project.build.finalName}:latest" />
+                      <arg value="${dockerImageName}:${project.version}" />
+                      <arg value="dockerreg.iam-extern.de/${dockerImageName}:latest" />
                     </exec>
                     <exec executable="docker">
                       <arg value="push" />
-                      <arg value="dockerreg.fordo.de/${project.build.finalName}:latest" />
+                      <arg value="dockerreg.iam-extern.de/${dockerImageName}:latest" />
                     </exec>
                   </target>
                 </configuration>
